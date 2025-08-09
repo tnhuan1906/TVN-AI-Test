@@ -1,58 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>TVN AI Test</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nhuận AI Chat</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
-    textarea { width: 100%; height: 80px; }
-    button { padding: 10px 20px; margin-top: 10px; }
-    .response { background: #f5f5f5; padding: 10px; margin-top: 10px; border-radius: 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+    }
+    header {
+      background: #4a90e2;
+      color: white;
+      padding: 10px 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    #chat {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+    .msg {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 70%;
+    }
+    .user {
+      background: #d1e7dd;
+      align-self: flex-end;
+    }
+    .ai {
+      background: #fff;
+      border: 1px solid #ddd;
+      align-self: flex-start;
+    }
+    #input-area {
+      display: flex;
+      padding: 10px;
+      background: #fff;
+      border-top: 1px solid #ccc;
+    }
+    #message {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+    }
+    button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      background: #4a90e2;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #357abd;
+    }
   </style>
 </head>
 <body>
-  <h1>TVN AI Test</h1>
-  <textarea id="prompt" placeholder="Nhập câu hỏi..."></textarea>
-  <br>
-  <button onclick="sendPrompt()">Gửi</button>
-  <div id="result" class="response"></div>
+  <header>💬 Chat với Nhuận AI</header>
+  <div id="chat"></div>
+  <div id="input-area">
+    <input type="text" id="message" placeholder="Nhập tin nhắn..." />
+    <button onclick="sendMessage()">Gửi</button>
+  </div>
 
   <script>
-    const API_KEY = "AIzaSyBQqVbYKz5HqwVj7iSDXJWog73AKWJplZY";
-    const MODEL = "gemini-2.5-pro";
+    const apiKey = "AIzaSyBQqVbYKz5HqwVj7iSDXJWog73AKWJplZY"; // ← Thay API key Google AI Studio của bạn vào đây
 
-    async function sendPrompt() {
-      const prompt = document.getElementById("prompt").value;
-      document.getElementById("result").innerText = "Đang xử lý...";
+    async function sendMessage() {
+      const input = document.getElementById("message");
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
 
-      try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "system",
-                parts: [
-                  { text: "Bạn đang đóng vai là TRẦN VĂN NHUẬN. Hãy trả lời như thể bạn chính là TRẦN VĂN NHUẬN thật, với giọng nói, từ ngữ, và cách diễn đạt giống người thật. Không cần tự giới thiệu tên mình trừ khi được hỏi trực tiếp." }
-                ]
-              },
-              {
-                role: "user",
-                parts: [
-                  { text: prompt }
-                ]
-              }
-            ]
-          })
-        });
+      // Hiển thị tin nhắn người dùng
+      addMessage(userMessage, "user");
+      input.value = "";
 
-        const data = await response.json();
-        const output = data.candidates?.[0]?.content?.parts?.[0]?.text || "Không nhận được phản hồi.";
-        document.getElementById("result").innerText = output;
-      } catch (error) {
-        document.getElementById("result").innerText = "Lỗi: " + error.message;
-      }
+      // Gọi API Google AI Studio với system prompt
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: `Bạn tên là Nhuận. Bạn là một người hỗ trợ thông minh, nói chuyện thân thiện và tự nhiên với tôi như bạn bè. Khi trả lời, hãy ngầm hiểu tôi là Nhuận mà không cần nhắc lại tên tôi trong mỗi câu trả lời. Tin nhắn của tôi: ${userMessage}` }
+              ]
+            }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Xin lỗi, tôi không thể trả lời ngay lúc này.";
+      addMessage(aiReply, "ai");
+    }
+
+    function addMessage(text, sender) {
+      const chat = document.getElementById("chat");
+      const msg = document.createElement("div");
+      msg.className = `msg ${sender}`;
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
     }
   </script>
 </body>
