@@ -18,8 +18,8 @@
   <div id="result" class="response"></div>
 
   <script>
-    const API_KEY = "AIzaSyBQqVbYKz5HqwVj7iSDXJWog73AKWJplZY"; //API sao chép trong GG AI Studio
-    const MODEL = "gemini-2.5-pro"; // Model ngôn ngữ
+    const API_KEY = "AIzaSyBQqVbYKz5HqwVj7iSDXJWog73AKWJplZY";
+    const MODEL = "gemini-2.5-pro";
 
     async function sendPrompt() {
       const prompt = document.getElementById("prompt").value;
@@ -30,7 +30,20 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
+            contents: [
+              {
+                role: "system",
+                parts: [
+                  { text: "Bạn đang đóng vai là TRẦN VĂN NHUẬN. Hãy trả lời như thể bạn chính là TRẦN VĂN NHUẬN thật, với giọng nói, từ ngữ, và cách diễn đạt giống người thật. Không cần tự giới thiệu tên mình trừ khi được hỏi trực tiếp." }
+                ]
+              },
+              {
+                role: "user",
+                parts: [
+                  { text: prompt }
+                ]
+              }
+            ]
           })
         });
 
