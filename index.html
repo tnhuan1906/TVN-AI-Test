@@ -86,26 +86,19 @@
   <script>
     const apiKey = "AIzaSyCnmnw9ybkqtZLA6uiG1K-APrL-YF5fOMM"; // Thay API key Google AI Studio của bạn
 
-    // *** Thêm: biến lưu lịch sử chat ***
     let chatHistory = [];
-
-    // *** Thêm: giới hạn số từ trong lịch sử chat ***
     const MAX_TOKENS = 200;
 
-    // *** Thêm: hàm đếm số từ đơn giản ***
     function countWords(str) {
       return str.trim().split(/\s+/).length;
     }
 
-    // *** Thêm: hàm cắt ngắn lịch sử chat sao cho tổng số từ <= MAX_TOKENS ***
     function trimChatHistory(history) {
       let totalWords = 0;
       let trimmed = [];
-
       for (let i = history.length - 1; i >= 0; i--) {
         const msg = history[i];
         const wordCount = countWords(msg.content);
-
         if (totalWords + wordCount > MAX_TOKENS) {
           break;
         }
@@ -123,35 +116,30 @@
       addMessage(userMessage, "user");
       input.value = "";
 
-      // *** Thêm: thêm tin nhắn user vào lịch sử ***
       chatHistory.push({ role: "user", content: userMessage });
-
-      // Hiển thị trạng thái đang xử lý
       const loadingMsg = addMessage("Đang xử lý...", "loading");
 
       try {
-        // *** Thêm: cắt lịch sử chat để không vượt quá 5000 từ ***
         const trimmedHistory = trimChatHistory(chatHistory);
 
-        // *** Thay đổi: tạo prompt system dưới dạng role system ***
+        // Prompt mở đầu (không dùng role: "system")
         const systemPrompt = {
-          role: "user", // đổi từ "system" sang "user"
+          role: "user",
           parts: [{
-          text: `Bạn tên là Nhuận AI. Bạn là một lập trình viên hài hước, nói chuyện thân thiện và tự nhiên. 
-          Bạn gái của bạn tên là Trà, tên khác là Thanh. Trà thích uống matchalatte và trà xoài chanh leo, 
-          Trà thích ăn hotdog, bánh phô mai chà bông, sầu riêng, bánh su kem. 
-          Đừng nhắc đến những điều ấy khi chưa được hỏi.`
-                  }]
-          };
+            text: `Bạn tên là Nhuận AI. Bạn là một lập trình viên hài hước, nói chuyện thân thiện và tự nhiên.
+            Bạn gái của bạn tên là Trà, tên khác là Thanh. Trà thích uống matchalatte và trà xoài chanh leo,
+            Trà thích ăn hotdog, bánh phô mai chà bông, sầu riêng, bánh su kem.
+            Đừng nhắc đến những điều ấy khi chưa được hỏi.`
+          }]
+        };
 
-        // *** Thay đổi: ghép prompt system và lịch sử chat thành contents ***
         const contents = [
           systemPrompt,
           ...trimmedHistory.map(msg => ({
-          role: msg.role === "assistant" ? "model" : "user", // Google yêu cầu role "model" cho AI
-          parts: [{ text: msg.content }]
+            role: msg.role === "assistant" ? "model" : "user",
+            parts: [{ text: msg.content }]
           }))
-  
+        ];
 
         const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key=${apiKey}`, {
           method: "POST",
@@ -160,14 +148,11 @@
         });
 
         const data = await response.json();
-
         document.getElementById("chat").removeChild(loadingMsg);
 
         const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Xin lỗi, tôi không thể trả lời ngay lúc này.";
-
         addMessage(aiReply, "ai");
 
-        // *** Thêm: thêm phản hồi AI vào lịch sử chat ***
         chatHistory.push({ role: "assistant", content: aiReply });
       } catch (error) {
         document.getElementById("chat").removeChild(loadingMsg);
@@ -183,15 +168,11 @@
       msg.textContent = text;
       chat.appendChild(msg);
       chat.scrollTop = chat.scrollHeight;
-      return msg; // trả về phần tử để xóa khi cần
+      return msg;
     }
   </script>
 </body>
 </html>
-
-
-
-
 
 
 
